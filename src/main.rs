@@ -1,5 +1,5 @@
 use std::convert::Infallible;
-use std::net::SocketAddr;
+use std::path::Path;
 
 use http_body_util::Full;
 use hyper::body::Bytes;
@@ -7,7 +7,7 @@ use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
-use tokio::net::TcpListener;
+use tokio::net::UnixListener;
 
 async fn hello(_: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>>, Infallible> {
     Ok(Response::new(Full::new(Bytes::from("Hello, World!"))))
@@ -15,8 +15,8 @@ async fn hello(_: Request<hyper::body::Incoming>) -> Result<Response<Full<Bytes>
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
-    let addr = SocketAddr::from(([127, 0, 0, 1], 3007));
-    let listener = TcpListener::bind(addr).await?;
+    let path = Path::new("/tmp/myapp.sock");
+    let listener = UnixListener::bind(path)?;
 
     loop {
         let (stream, _) = listener.accept().await?;
